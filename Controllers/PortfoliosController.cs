@@ -14,7 +14,7 @@ namespace trademate.Controllers
     [ApiController]
     public class PortfoliosController : ControllerBase
     {
-        private readonly ApplicationDbContext? _context;
+        private readonly ApplicationDbContext _context;
 
         public PortfoliosController(ApplicationDbContext context)
         {
@@ -27,10 +27,55 @@ namespace trademate.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Portfolio>> GetPortfolio
+        public async Task<ActionResult<Portfolio>> GetPortfolio(int id)
+        {
+            var portfolio = await _context.Portfolios.FindAsync(id);
 
+            if (portfolio == null)
+            {
+                return NotFound();
+            }
 
+            return portfolio;
 
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Portfolio>> PostPortfolio(Portfolio portfolio)
+        {
+            _context.Portfolios.Add(portfolio);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetPortfolio), new { id = portfolio.Id }, portfolio);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPortfolio(int id, Portfolio portfolio)
+        {
+            if (id != portfolio.Id)
+            {
+                return BadRequest();
+            }
+            _context.Entry(portfolio).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PortfolioExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+
+            }
+
+        }
 
 
 
