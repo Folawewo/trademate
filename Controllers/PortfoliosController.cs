@@ -21,10 +21,14 @@ namespace trademate.Controllers
             _context = context;
         }
 
-        public async Task<ActionResult<IEnumerable<Portfolio>>> GetPortfolio()
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Portfolio>>> GetPortfolios()
         {
             return await _context.Portfolios.ToListAsync();
         }
+
+        // api/Portfolios
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Portfolio>> GetPortfolio(int id)
@@ -74,14 +78,29 @@ namespace trademate.Controllers
                 }
 
             }
+            return NoContent();
 
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePortfolio(int id)
+        {
+            var portfolio = await _context.Portfolios.FindAsync(id);
+            if ( portfolio == null)
+            {
+                return NotFound();
+            }
+            _context.Portfolios.Remove(portfolio);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
 
-
-
-
+        private bool PortfolioExists(int id)
+        {
+            return _context.Portfolios.Any(e => e.Id == id);
+        }
 
     }
 }
